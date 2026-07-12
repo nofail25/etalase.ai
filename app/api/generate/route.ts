@@ -9,12 +9,36 @@ export async function POST(req: NextRequest) {
     }
     const ai = new GoogleGenAI({ apiKey });
 
-    const body = await req.json();
-    const { imageBase64, productName, sellingPoints, tone } = body;
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Format request body tidak valid" }, { status: 400 });
+    }
 
-    if (!productName) {
+    const { imageBase64, productName, sellingPoints, tone } = body || {};
+
+    // 1. Validasi Keamanan Input & Batasan Panjang (Mencegah Prompt Injection & Buffer Overflow)
+    if (!productName || typeof productName !== 'string' || !productName.trim()) {
       return NextResponse.json({ error: "Nama Produk wajib diisi" }, { status: 400 });
     }
+    if (productName.length > 200) {
+      return NextResponse.json({ error: "Nama Produk terlalu panjang (maksimal 200 karakter)" }, { status: 400 });
+    }
+    if (sellingPoints && typeof sellingPoints === 'string' && sellingPoints.length > 1500) {
+      return NextResponse.json({ error: "Detail keunggulan produk terlalu panjang (maksimal 1.500 karakter)" }, { status: 400 });
+    }
+
+    // 2. Validasi Keamanan Ukuran Gambar Base64 (Mencegah Server Out of Memory di Vercel)
+    if (imageBase64 && typeof imageBase64 === 'string') {
+      if (imageBase64.length > 6 * 1024 * 1024) { // ~4.5 MB in base64 string
+        return NextResponse.json({ error: "Ukuran foto terlalu besar untuk diproses server. Harap gunakan foto di bawah 4 MB." }, { status: 400 });
+      }
+    }
+
+    // 3. Sanitasi Pilihan Tone
+    const validTones = ['Gaul/Asyik', 'Profesional', 'Keluarga/Hangat'];
+    const safeTone = validTones.includes(tone) ? tone : 'Gaul/Asyik';
 
     const systemInstruction = `Kamu adalah Senior Copywriter & Social Media Manager profesional khusus UMKM Indonesia yang telah membantu ribuan pedagang kaki lima, toko online, dan usaha rumahan sukses meningkatkan omset penjualan.
 
@@ -60,7 +84,7 @@ STRUKTUR JSON YANG WAJIB DIKEMBALIKAN:
     const userPrompt = `Buatkan konten pemasaran lengkap dan profesional untuk produk berikut:
 - Nama Produk: ${productName}
 - Keunggulan Tambahan (dari penjual): ${sellingPoints || 'Tidak disebutkan (eksplorasi dari nama produk dan analisis foto produk)'}
-- Pilihan Gaya Bahasa (Tone): ${tone}`;
+- Pilihan Gaya Bahasa (Tone): ${safeTone}`;
 
     const parts: any[] = [{ text: userPrompt }];
 

@@ -59,32 +59,6 @@ Hanya dalam **1 kali klik upload foto produk dan nama**, Etalase.AI menghasilkan
 
 ---
 
-## 🚀 Cara Menjalankan Lokal
-
-1. **Kloning repositori:**
-   ```bash
-   git clone https://github.com/nofail25/etalase.ai.git
-   cd etalase.ai
-   ```
-
-2. **Install dependensi:**
-   ```bash
-   npm install
-   ```
-
-3. **Konfigurasi Environment Variable:**
-   Buat file `.env.local` di root folder dan masukkan API Key Gemini Anda:
-   ```env
-   GEMINI_API_KEY=AIzaSy...your_api_key_here
-   ```
-
-4. **Jalankan server pengembangan:**
-   ```bash
-   npm run dev
-   ```
-   Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
-
----
 
 ## 🏆 Kesesuaian dengan Kriteria IDCamp Challenge #2
 

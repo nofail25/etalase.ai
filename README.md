@@ -5,7 +5,6 @@
 ## Fitur
 
 - **Analisis Visual Foto Produk (Multi-modal):** Menggunakan kemampuan visual `gemini-3.5-flash` untuk menganalisis warna, tekstur (misal: renyah, lumer, tebal), dan bentuk kemasan secara langsung dari foto, menghasilkan deskripsi yang **100% autentik dan akurat**, bukan template generik.
-- **Indikator Kuota Harian Gratis (`Freemium Model`):** Manajemen kuota harian (`10/10`) berbasis *localStorage* dengan sistem reset otomatis harian, serta fitur klik-to-reset khusus pengujian juri.
 - **Ekspor 1-Klik ke WhatsApp Admin:** Tombol praktis untuk mengirimkan seluruh paket konten (*Deskripsi + Caption + Insight + Template CS*) langsung ke WhatsApp admin toko/pemilik untuk disimpan atau diposting.
 - **Panduan Onboarding Visual 4 Langkah:** Tooltip panduan interaktif bagi pengguna pemula/non-teknis.
 - **Client-Side Image Compression:** Kompresi foto otomatis di peramban pengguna sebelum diproses AI untuk menghemat *bandwidth* dan mempercepat durasi generasi.

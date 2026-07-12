@@ -137,28 +137,16 @@ export default function AppClient() {
   const [error, setError] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
-  const [quota, setQuota] = useState<number>(10);
-  const [maxQuota] = useState<number>(10);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Tampilkan onboarding hanya untuk pengguna baru & atur kuota harian (cek localStorage)
+  // Tampilkan onboarding hanya untuk pengguna baru
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const seen = localStorage.getItem('etalase_onboarded');
       if (!seen) {
         setShowOnboarding(true);
-      }
-      const today = new Date().toISOString().split('T')[0];
-      const savedQuotaDate = localStorage.getItem('etalase_daily_quota_date');
-      const savedCount = localStorage.getItem('etalase_daily_quota_count');
-      if (savedQuotaDate !== today) {
-        localStorage.setItem('etalase_daily_quota_date', today);
-        localStorage.setItem('etalase_daily_quota_count', '10');
-        setQuota(10);
-      } else if (savedCount !== null) {
-        setQuota(parseInt(savedCount, 10));
       }
     }, 0);
 
@@ -204,10 +192,6 @@ export default function AppClient() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!productName.trim()) { setError('Nama produk wajib diisi.'); return; }
-    if (quota <= 0) {
-      setError('❌ Kuota harian gratis Anda (10/10) telah habis hari ini. Kuota akan di-reset besok pagi, atau klik badge "Kuota Gratis: 0/10" di pojok kanan atas untuk mereset kuota pengujian IDCamp.');
-      return;
-    }
     setError(null);
     setStep('loading');
     try {
@@ -230,9 +214,6 @@ export default function AppClient() {
       const data = await response.json();
       setResult(data);
       setStep('result');
-      const newQuota = Math.max(0, quota - 1);
-      setQuota(newQuota);
-      localStorage.setItem('etalase_daily_quota_count', newQuota.toString());
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan. Coba lagi.');
       setStep('input');
@@ -329,19 +310,6 @@ export default function AppClient() {
             <span className="hidden sm:inline text-gray-500 text-xs">Generator Konten UMKM</span>
           </div>
           <div className="flex items-center gap-2">
-            {/* Quota Badge (Click to reset in Judge/Test Mode) */}
-            <div
-              title="Klik untuk mereset kuota (Mode Pengujian Juri)"
-              onClick={() => {
-                setQuota(10);
-                localStorage.setItem('etalase_daily_quota_count', '10');
-                alert('⚡ Kuota harian gratis telah di-reset kembali menjadi 10/10 untuk keperluan pengujian IDCamp!');
-              }}
-              className="cursor-pointer flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-amber-50 sm:bg-amber-50/80 hover:bg-amber-100 border border-amber-200/80 text-amber-800 text-xs font-medium transition-all"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              <span><span className="hidden sm:inline">Kuota Gratis: </span><strong className="font-semibold">{quota}/{maxQuota}</strong></span>
-            </div>
             <button
               onClick={() => setShowOnboarding(true)}
               className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 px-2.5 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"

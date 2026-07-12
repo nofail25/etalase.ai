@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Camera, ImageIcon, Copy, TrendingUp,
   Sparkles, CheckCircle2, RefreshCw, X,
@@ -57,25 +58,25 @@ const TONES = [
 const ONBOARDING_STEPS = [
   {
     icon: Camera,
-    color: 'bg-blue-50 text-blue-600',
+    color: 'bg-[#4285F4]/10 text-[#4285F4]',
     title: 'Foto Produk Anda',
     desc: 'Ambil atau unggah foto produk dari kamera atau galeri ponsel Anda. Tidak perlu edit — foto apa adanya sudah cukup. AI akan menganalisis warna, tekstur, dan kemasan secara otomatis.',
   },
   {
     icon: Package,
-    color: 'bg-violet-50 text-violet-600',
+    color: 'bg-[#EA4335]/10 text-[#EA4335]',
     title: 'Isi Nama & Keunggulan',
     desc: 'Ketik nama produk Anda (wajib) dan keunggulan tambahan jika ada. Contoh: "Keripik Pisang Coklat" dengan keunggulan "manis pas, tanpa pengawet, kemasan zipper".',
   },
   {
     icon: FileText,
-    color: 'bg-amber-50 text-amber-600',
+    color: 'bg-[#FBBC05]/15 text-[#8a6100]',
     title: 'Pilih Gaya Bahasa',
     desc: 'Pilih gaya bahasa yang sesuai target pembeli Anda. Gaul/Asyik untuk anak muda, Profesional untuk katalog resmi, atau Hangat untuk produk keluarga & kuliner rumahan.',
   },
   {
     icon: Sparkles,
-    color: 'bg-green-50 text-green-600',
+    color: 'bg-[#34A853]/10 text-[#34A853]',
     title: 'Salin & Gunakan!',
     desc: 'Klik "Buat Konten Sekarang" dan tunggu beberapa detik. Anda akan mendapat deskripsi marketplace + caption media sosial yang siap disalin dan dipasang langsung di Shopee, Tokopedia, Instagram, atau TikTok.',
   },
@@ -114,6 +115,17 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function BrandIcon({ className = 'w-7 h-7' }: { className?: string }) {
+  return (
+    <div className={`${className} relative grid shrink-0 place-items-center rounded-lg bg-white shadow-sm ring-1 ring-gray-200`}>
+      <div className="absolute inset-1 rounded-md bg-[conic-gradient(from_30deg,#4285F4,#34A853,#FBBC05,#EA4335,#4285F4)]" />
+      <div className="relative grid h-[72%] w-[72%] place-items-center rounded-md bg-white">
+        <Sparkles className="w-3.5 h-3.5 text-gray-900" />
+      </div>
+    </div>
+  );
+}
+
 // --- Main Component ---
 export default function AppClient() {
   const [step, setStep] = useState<'input' | 'loading' | 'result'>('input');
@@ -133,20 +145,24 @@ export default function AppClient() {
 
   // Tampilkan onboarding hanya untuk pengguna baru & atur kuota harian (cek localStorage)
   useEffect(() => {
-    const seen = localStorage.getItem('etalase_onboarded');
-    if (!seen) {
-      setShowOnboarding(true);
-    }
-    const today = new Date().toISOString().split('T')[0];
-    const savedQuotaDate = localStorage.getItem('etalase_daily_quota_date');
-    const savedCount = localStorage.getItem('etalase_daily_quota_count');
-    if (savedQuotaDate !== today) {
-      localStorage.setItem('etalase_daily_quota_date', today);
-      localStorage.setItem('etalase_daily_quota_count', '10');
-      setQuota(10);
-    } else if (savedCount !== null) {
-      setQuota(parseInt(savedCount, 10));
-    }
+    const timer = window.setTimeout(() => {
+      const seen = localStorage.getItem('etalase_onboarded');
+      if (!seen) {
+        setShowOnboarding(true);
+      }
+      const today = new Date().toISOString().split('T')[0];
+      const savedQuotaDate = localStorage.getItem('etalase_daily_quota_date');
+      const savedCount = localStorage.getItem('etalase_daily_quota_count');
+      if (savedQuotaDate !== today) {
+        localStorage.setItem('etalase_daily_quota_date', today);
+        localStorage.setItem('etalase_daily_quota_count', '10');
+        setQuota(10);
+      } else if (savedCount !== null) {
+        setQuota(parseInt(savedCount, 10));
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const dismissOnboarding = () => {
@@ -201,8 +217,15 @@ export default function AppClient() {
         body: JSON.stringify({ imageBase64: imagePreview, productName, sellingPoints, tone }),
       });
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Gagal menghasilkan konten');
+        let errorMsg = 'Gagal menghasilkan konten';
+        try {
+          const errData = await response.json();
+          errorMsg = errData.error || errorMsg;
+        } catch {
+          const rawText = await response.text();
+          errorMsg = `Server Error (${response.status}): ${rawText.slice(0, 150) || 'Internal Server Error dari Vercel Serverless Function'}`;
+        }
+        throw new Error(errorMsg);
       }
       const data = await response.json();
       setResult(data);
@@ -232,22 +255,22 @@ export default function AppClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-inter">
+    <div className="min-h-screen bg-white bg-[linear-gradient(120deg,rgba(66,133,244,0.08),rgba(255,255,255,0)_34%,rgba(251,188,5,0.08)_68%,rgba(52,168,83,0.08))] font-inter">
 
       {/* ===== ONBOARDING OVERLAY ===== */}
       {showOnboarding && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm overflow-hidden">
             {/* Progress Bar */}
             <div className="h-1 bg-gray-100">
               <div
-                className="h-1 bg-blue-600 transition-all duration-300"
+                className="h-1 bg-[linear-gradient(90deg,#4285F4,#34A853,#FBBC05,#EA4335)] transition-all duration-300"
                 style={{ width: `${((onboardingStep + 1) / ONBOARDING_STEPS.length) * 100}%` }}
               />
             </div>
             <div className="p-6">
               {/* Step Icon */}
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${ONBOARDING_STEPS[onboardingStep].color}`}>
+              <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${ONBOARDING_STEPS[onboardingStep].color}`}>
                 {React.createElement(ONBOARDING_STEPS[onboardingStep].icon, { className: 'w-6 h-6' })}
               </div>
               {/* Step Counter */}
@@ -272,7 +295,7 @@ export default function AppClient() {
               {onboardingStep < ONBOARDING_STEPS.length - 1 ? (
                 <button
                   onClick={() => setOnboardingStep(s => s + 1)}
-                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 bg-gray-950 hover:bg-black text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
                 >
                   Lanjut
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -280,7 +303,7 @@ export default function AppClient() {
               ) : (
                 <button
                   onClick={dismissOnboarding}
-                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 bg-gray-950 hover:bg-black text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
                 >
                   Mulai Sekarang
                   <Sparkles className="w-3.5 h-3.5" />
@@ -292,17 +315,15 @@ export default function AppClient() {
       )}
 
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-20 bg-white border-b border-gray-200">
+      <header className="sticky top-0 z-20 bg-white/85 backdrop-blur-xl border-b border-gray-200/80">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <a href="/" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors mr-1">
+            <Link href="/" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors mr-1">
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Beranda</span>
-            </a>
+            </Link>
             <span className="text-gray-200">|</span>
-            <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
+            <BrandIcon />
             <span className="font-semibold text-gray-900 text-sm tracking-tight">Etalase.AI</span>
             <span className="hidden sm:inline text-gray-300 text-sm">|</span>
             <span className="hidden sm:inline text-gray-500 text-xs">Generator Konten UMKM</span>
@@ -369,7 +390,7 @@ export default function AppClient() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                   {/* LEFT: Photo Upload */}
-                  <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                  <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                     <div className="flex items-center gap-2 mb-4">
                       <ImageIcon className="w-4 h-4 text-gray-400" />
                       <h2 className="text-sm font-semibold text-gray-700">Foto Produk</h2>
@@ -381,18 +402,18 @@ export default function AppClient() {
                         <button
                           type="button"
                           onClick={() => cameraInputRef.current?.click()}
-                          className="group flex flex-col items-center justify-center gap-2.5 border border-dashed border-gray-200 rounded-xl p-6 hover:border-blue-400 hover:bg-blue-50/40 transition-all duration-200"
+                          className="group flex flex-col items-center justify-center gap-2.5 border border-dashed border-gray-200 rounded-xl p-6 hover:border-[#4285F4] hover:bg-[#4285F4]/5 transition-all duration-200"
                         >
-                          <Camera className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                          <span className="text-xs font-medium text-gray-500 group-hover:text-blue-600">Kamera</span>
+                          <Camera className="w-5 h-5 text-gray-400 group-hover:text-[#4285F4] transition-colors" />
+                          <span className="text-xs font-medium text-gray-500 group-hover:text-[#4285F4]">Kamera</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="group flex flex-col items-center justify-center gap-2.5 border border-dashed border-gray-200 rounded-xl p-6 hover:border-blue-400 hover:bg-blue-50/40 transition-all duration-200"
+                          className="group flex flex-col items-center justify-center gap-2.5 border border-dashed border-gray-200 rounded-xl p-6 hover:border-[#4285F4] hover:bg-[#4285F4]/5 transition-all duration-200"
                         >
-                          <ImageIcon className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                          <span className="text-xs font-medium text-gray-500 group-hover:text-blue-600">Dari Galeri</span>
+                          <ImageIcon className="w-5 h-5 text-gray-400 group-hover:text-[#4285F4] transition-colors" />
+                          <span className="text-xs font-medium text-gray-500 group-hover:text-[#4285F4]">Dari Galeri</span>
                         </button>
                       </div>
                     ) : (
@@ -419,7 +440,7 @@ export default function AppClient() {
                   {/* RIGHT: Product Details */}
                   <div className="flex flex-col gap-5">
                     {/* Product Name */}
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                       <div className="flex items-center gap-2 mb-4">
                         <Package className="w-4 h-4 text-gray-400" />
                         <h2 className="text-sm font-semibold text-gray-700">Detail Produk</h2>
@@ -434,7 +455,7 @@ export default function AppClient() {
                             placeholder="Contoh: Keripik Pisang Coklat Lumer"
                             value={productName}
                             onChange={(e) => setProductName(e.target.value)}
-                            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#4285F4] focus:ring-2 focus:ring-[#4285F4]/20 transition-all"
                             required
                           />
                         </div>
@@ -447,14 +468,14 @@ export default function AppClient() {
                             placeholder="Contoh: manis pas, tanpa pengawet, kemasan premium..."
                             value={sellingPoints}
                             onChange={(e) => setSellingPoints(e.target.value)}
-                            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none h-[90px]"
+                            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#4285F4] focus:ring-2 focus:ring-[#4285F4]/20 transition-all resize-none h-[90px]"
                           />
                         </div>
                       </div>
                     </div>
 
                     {/* Tone Selection */}
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                       <div className="flex items-center gap-2 mb-4">
                         <FileText className="w-4 h-4 text-gray-400" />
                         <h2 className="text-sm font-semibold text-gray-700">Gaya Bahasa</h2>
@@ -467,14 +488,14 @@ export default function AppClient() {
                             onClick={() => setTone(t.id)}
                             className={`flex flex-col items-start p-3 rounded-xl border text-left transition-all duration-200 ${
                               tone === t.id
-                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500/20'
+                                ? 'border-[#4285F4] bg-[#4285F4]/5 ring-2 ring-[#4285F4]/20'
                                 : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                             }`}
                           >
-                            <span className={`text-xs font-semibold ${tone === t.id ? 'text-blue-700' : 'text-gray-700'}`}>
+                            <span className={`text-xs font-semibold ${tone === t.id ? 'text-[#174EA6]' : 'text-gray-700'}`}>
                               {t.label}
                             </span>
-                            <span className={`text-[10px] mt-0.5 ${tone === t.id ? 'text-blue-500' : 'text-gray-400'}`}>
+                            <span className={`text-[10px] mt-0.5 ${tone === t.id ? 'text-[#4285F4]' : 'text-gray-400'}`}>
                               {t.desc}
                             </span>
                           </button>
@@ -493,7 +514,7 @@ export default function AppClient() {
                     {/* Submit */}
                     <button
                       type="submit"
-                      className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm py-3 rounded-xl transition-colors shadow-sm shadow-blue-200"
+                      className="w-full flex items-center justify-center gap-2 bg-gray-950 hover:bg-black active:bg-gray-800 text-white font-semibold text-sm py-3 rounded-xl transition-all shadow-lg shadow-gray-900/15 hover:-translate-y-0.5"
                     >
                       <Sparkles className="w-4 h-4" />
                       Buat Konten Sekarang
@@ -514,7 +535,7 @@ export default function AppClient() {
               transition={{ duration: 0.2 }}
               className="flex flex-col items-center justify-center min-h-[50vh] gap-5 text-center"
             >
-              <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-200">
+              <div className="w-14 h-14 rounded-lg bg-[conic-gradient(from_30deg,#4285F4,#34A853,#FBBC05,#EA4335,#4285F4)] flex items-center justify-center shadow-lg shadow-gray-900/15">
                 <Loader2 className="w-7 h-7 text-white animate-spin" />
               </div>
               <div>
@@ -535,14 +556,14 @@ export default function AppClient() {
               transition={{ duration: 0.3 }}
             >
               {/* Result Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <CheckCircle2 className="w-4 h-4 text-green-500" />
                     <span className="text-xs font-semibold text-green-600 uppercase tracking-wide">Konten siap digunakan</span>
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
-                    Hasil untuk "{productName}"
+                    Hasil untuk {productName}
                   </h1>
                 </div>
                 <div className="flex items-center gap-2">
@@ -563,7 +584,7 @@ export default function AppClient() {
                 <div className="lg:col-span-2 space-y-5">
 
                   {/* Ecommerce Description */}
-                  <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                  <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <SectionLabel>Deskripsi Marketplace</SectionLabel>
@@ -580,7 +601,7 @@ export default function AppClient() {
                   </div>
 
                   {/* Social Media Caption */}
-                  <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                  <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <SectionLabel>Caption Media Sosial</SectionLabel>
@@ -595,7 +616,7 @@ export default function AppClient() {
 
                   {/* Customer Service Replies Card */}
                   {result.customerServiceReplies && result.customerServiceReplies.length > 0 && (
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                           <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
@@ -636,7 +657,7 @@ export default function AppClient() {
 
                   {/* Photo preview */}
                   {imagePreview && (
-                    <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+                    <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                       <SectionLabel>Foto Produk</SectionLabel>
                       <div className="rounded-xl overflow-hidden aspect-square bg-gray-50 border border-gray-100">
                         <img
@@ -646,14 +667,14 @@ export default function AppClient() {
                         />
                       </div>
                       <div className="flex items-center gap-1.5 mt-2.5">
-                        <Sparkles className="w-3 h-3 text-blue-500" />
-                        <span className="text-[11px] text-blue-600 font-medium">Dianalisis oleh AI</span>
+                        <Sparkles className="w-3 h-3 text-[#4285F4]" />
+                        <span className="text-[11px] text-[#174EA6] font-medium">Dianalisis oleh AI</span>
                       </div>
                     </div>
                   )}
 
                   {/* Market Insight */}
-                  <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                  <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                     <div className="flex items-center gap-2 mb-4">
                       <div className="w-6 h-6 rounded-md bg-amber-50 border border-amber-200 flex items-center justify-center">
                         <TrendingUp className="w-3.5 h-3.5 text-amber-600" />

@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: "API Key Gemini belum dikonfigurasi pada environment server (.env.local)" }, { status: 500 });
+      return NextResponse.json({ error: "API Key AI belum dikonfigurasi pada environment server (.env.local)" }, { status: 500 });
     }
     const ai = new GoogleGenAI({ apiKey });
 
@@ -104,7 +104,7 @@ STRUKTUR JSON YANG WAJIB DIKEMBALIKAN:
 
     const resultText = response.text;
     if (!resultText) {
-      throw new Error("No response from Gemini");
+      throw new Error("Respons AI tidak ditemukan");
     }
 
     const firstBrace = resultText.indexOf('{');
@@ -117,7 +117,10 @@ STRUKTUR JSON YANG WAJIB DIKEMBALIKAN:
     const data = JSON.parse(cleanJsonStr);
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
-    return NextResponse.json({ error: error.message || "Failed to generate content" }, { status: 500 });
+    console.error("AI API Error:", error);
+    const detailMsg = error?.message || "Kesalahan tidak diketahui.";
+    return NextResponse.json({ 
+      error: `Terjadi kesalahan AI: ${detailMsg}. Jika Anda di Vercel, pastikan GEMINI_API_KEY sudah dipasang di Environment Variables dan sudah melakukan Redeploy.` 
+    }, { status: 500 });
   }
 }

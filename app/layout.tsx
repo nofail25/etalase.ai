@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Etalase.AI — AutoPromo untuk UMKM',
-  description: 'Ubah foto produk biasa menjadi konten pemasaran profesional siap pakai untuk marketplace dan media sosial. Didukung Google Gemini AI.',
+  title: 'Etalase.AI - AutoPromo untuk UMKM',
+  description: 'Ubah foto produk biasa menjadi konten pemasaran profesional siap pakai untuk marketplace dan media sosial.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

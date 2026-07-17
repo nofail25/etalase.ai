@@ -98,11 +98,12 @@ function Reveal({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 28 }}
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={className}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
+      style={{ WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden', transform: 'translateZ(0)' }}
+      className={`will-change-transform transform-gpu ${className}`}
     >
       {children}
     </motion.div>
@@ -260,8 +261,8 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main>
-        <section className="relative px-5 pb-16 pt-16 sm:px-8 sm:pb-20 sm:pt-20">
+      <main className="overflow-x-hidden">
+        <section className="relative overflow-hidden px-5 pb-16 pt-16 sm:px-8 sm:pb-20 sm:pt-20">
           <div className="mx-auto max-w-6xl text-center">
             <motion.div
               initial={{ opacity: 0, y: 18 }}
@@ -334,7 +335,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="border-y border-gray-200 bg-[#f8fafd] px-5 py-16 sm:px-8">
+        <section className="relative overflow-hidden border-y border-gray-200 bg-[#f8fafd] px-5 py-16 sm:px-8">
           <div className="mx-auto grid max-w-6xl gap-5 md:grid-cols-3">
             {painPoints.map(({ icon: Icon, title, desc }, index) => (
               <Reveal key={title} delay={index * 0.08} className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -348,7 +349,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="cara-kerja" className="px-5 py-20 sm:px-8">
+        <section id="cara-kerja" className="relative overflow-hidden bg-white px-5 py-20 sm:px-8">
           <div className="mx-auto max-w-6xl">
             <SectionHeading
               eyebrow="Cara kerja"
@@ -373,7 +374,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="fitur" className="border-y border-gray-200 bg-gray-950 px-5 py-20 text-white sm:px-8">
+        <section id="fitur" className="relative overflow-hidden border-y border-gray-200 bg-gray-950 px-5 py-20 text-white sm:px-8">
           <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <Reveal>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gray-400">Fitur utama</p>
@@ -404,7 +405,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="umkm" className="px-5 py-20 sm:px-8">
+        <section id="umkm" className="relative overflow-hidden bg-white px-5 py-20 sm:px-8">
           <div className="mx-auto max-w-6xl">
             <SectionHeading
               eyebrow="Untuk siapa"
@@ -425,7 +426,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="px-5 pb-20 sm:px-8">
+        <section className="relative overflow-hidden bg-white px-5 pb-20 sm:px-8">
           <Reveal className="mx-auto max-w-6xl overflow-hidden rounded-lg border border-gray-200 bg-[linear-gradient(120deg,#f8fafd,#ffffff_44%,#fef7e0)] p-6 shadow-[0_24px_80px_rgba(60,64,67,0.12)] sm:p-10">
             <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>

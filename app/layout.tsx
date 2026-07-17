@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="dicoding:email" content="naufalrisra@gmail.com" />
       </head>
-      <body suppressHydrationWarning className="font-inter antialiased">
+      <body suppressHydrationWarning className="font-inter antialiased overflow-x-hidden bg-white text-gray-950 relative min-h-screen">
         {children}
       </body>
     </html>
